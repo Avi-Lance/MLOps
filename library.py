@@ -104,3 +104,28 @@ class CustomOHETransformer(BaseEstimator, TransformerMixin):
     #self.fit(X,y)
     result = self.transform(X)
     return result
+
+class CustomSigma3Transformer(BaseEstimator, TransformerMixin):
+  def __init__(self, target_column):
+    self.target_column = target_column
+    self.three_sigma = None
+
+  def fit(self, X, y = None):
+    assert isinstance(X, pd.core.frame.DataFrame), f'expected Dataframe but got {type(X)} instead.'
+    assert self.target_column in X.columns, f'unknown column {self.target_column}'
+    assert all([isinstance(v, (int, float)) for v in X[self.target_column].to_list()])
+
+    mean = X[self.target_column].mean()
+    std_dev = X[self.target_column].std()
+    self.three_sigma = (mean-3*std_dev, mean+3*std_dev)
+
+  def transform(self, X):
+    assert self.three_sigma is not None, f'NotFittedError: This {self.__class__.__name__} instance is not fitted yet. Call "fit" with appropriate arguments before using this estimator.'
+    transformed_df = X.copy()
+    transformed_df['Fare'] = transformed_df['Fare'].clip(lower=self.three_sigma[0], upper=self.three_sigma[1])
+    return transformed_df
+
+  def fit_transform(self, X, y = None):
+    self.fit(X,y)
+    result = self.transform(X)
+    return result
