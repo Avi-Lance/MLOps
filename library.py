@@ -130,3 +130,41 @@ class CustomSigma3Transformer(BaseEstimator, TransformerMixin):
     self.fit(X,y)
     result = self.transform(X)
     return result
+  
+class CustomTukeyTransformer(BaseEstimator, TransformerMixin):
+  def __init__(self, target_column, fence='outer'):
+    assert fence in ['inner', 'outer']
+    self.target_column = target_column
+    self.fence = fence
+    self.boundaries = None
+
+  def fit(self, X, y = None):
+    assert isinstance(X, pd.core.frame.DataFrame), f'expected Dataframe but got {type(X)} instead.'
+    assert self.target_column in X.columns, f'unknown column {self.target_column}'
+    assert all([isinstance(v, (int, float)) for v in X[self.target_column].to_list()])
+
+    q1 = X[self.target_column].quantile(0.25)
+    q3 = X[self.target_column].quantile(0.75)
+
+    iqr = q3-q1
+    fence_values = {'outer': 3, 'inner': 1.5}
+    fence_multiplier = fence_values.get(self.fence)
+
+    low = q1 - fence_multiplier * iqr
+    high = q3 + fence_multiplier * iqr
+
+    self.boundaries = (low, high)
+    return self
+
+  def transform(self, X):
+    assert self.boundaries is not None, f'NotFittedError: This {self.__class__.__name__} instance is not fitted yet. Call "fit" with appropriate arguments before using this estimator.'
+    transformed_df = X.copy()
+    transformed_df[self.target_column] = transformed_df[self.target_column].clip(lower=self.boundaries[0], upper=self.boundaries[1])
+    df_clean = transformed_df.reset_index(drop=True)
+    return df_clean
+
+
+  def fit_transform(self, X, y = None):
+    self.fit(X,y)
+    result = self.transform(X)
+    return result
