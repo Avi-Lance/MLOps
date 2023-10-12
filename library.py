@@ -122,8 +122,9 @@ class CustomSigma3Transformer(BaseEstimator, TransformerMixin):
   def transform(self, X):
     assert self.three_sigma is not None, f'NotFittedError: This {self.__class__.__name__} instance is not fitted yet. Call "fit" with appropriate arguments before using this estimator.'
     transformed_df = X.copy()
-    transformed_df['Fare'] = transformed_df['Fare'].clip(lower=self.three_sigma[0], upper=self.three_sigma[1])
-    return transformed_df
+    transformed_df[self.target_column] = transformed_df[self.target_column].clip(lower=self.three_sigma[0], upper=self.three_sigma[1])
+    df_clean = transformed_df.reset_index(drop=True)
+    return df_clean
 
   def fit_transform(self, X, y = None):
     self.fit(X,y)
