@@ -168,3 +168,32 @@ class CustomTukeyTransformer(BaseEstimator, TransformerMixin):
     self.fit(X,y)
     result = self.transform(X)
     return result
+
+class CustomRobustTransformer(BaseEstimator, TransformerMixin):
+  def __init__(self, column):
+    self.target_column = column
+    self.iqr = None
+    self.median = None
+
+  def fit(self, X, y = None):
+    assert isinstance(X, pd.core.frame.DataFrame), f'expected Dataframe but got {type(X)} instead.'
+    assert self.target_column in X.columns, f'unknown column {self.target_column}'
+    assert all([isinstance(v, (int, float)) for v in X[self.target_column].to_list()])
+
+    self.iqr = X[self.target_column].quantile(.75) - X[self.target_column].quantile(.25)
+    self.median = X[self.target_column].median()
+
+    return self
+
+  def transform(self, X):
+    assert self.iqr is not None and self.median is not None, f'NotFittedError: This {self.__class__.__name__} instance is not fitted yet. Call "fit" with appropriate arguments before using this estimator.'
+
+    transformed_df = X.copy()
+    transformed_df[self.target_column] -= self.median
+    transformed_df[self.target_column] /= self.iqr
+    return transformed_df
+
+  def fit_transform(self, X, y = None):
+    self.fit(X,y)
+    result = self.transform(X)
+    return result
