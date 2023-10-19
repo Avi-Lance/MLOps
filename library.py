@@ -1,10 +1,15 @@
 import pandas as pd
 import numpy as np
+import subprocess
+import sys
+subprocess.call([sys.executable, '-m', 'pip', 'install', 'category_encoders'])  #replaces !pip install
+import category_encoders as ce
 import sklearn
 sklearn.set_config(transform_output="pandas")  #pass pandas tables through pipeline instead of numpy matrices
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
 from sklearn.impute import KNNImputer
+
 
 class CustomMappingTransformer(BaseEstimator, TransformerMixin):
   def __init__(self, mapping_column, mapping_dict:dict):
