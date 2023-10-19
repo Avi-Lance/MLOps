@@ -227,3 +227,33 @@ def find_random_state(features_df, labels, n=200):
   rs_value = sum(var)/len(var)  #get average ratio value    
   idx = np.array(abs(var - rs_value)).argmin()  #find the index of the smallest value
   return idx
+
+titanic_transformer = Pipeline(steps=[
+    ('map_gender', CustomMappingTransformer('Gender', {'Male': 0, 'Female': 1})),
+    ('map_class', CustomMappingTransformer('Class', {'Crew': 0, 'C3': 1, 'C2': 2, 'C1': 3})),
+    ('target_joined', ce.TargetEncoder(cols=['Joined'],
+                           handle_missing='return_nan', #will use imputer later to fill in
+                           handle_unknown='return_nan'  #will use imputer later to fill in
+    )),
+    ('tukey_age', CustomTukeyTransformer(target_column='Age', fence='outer')),
+    ('tukey_fare', CustomTukeyTransformer(target_column='Fare', fence='outer')),
+    ('scale_age', CustomRobustTransformer('Age')),
+    ('scale_fare', CustomRobustTransformer('Fare')),
+    ('imputer', KNNImputer(n_neighbors=5, weights="uniform", add_indicator=False))
+    ], verbose=True)
+
+customer_transformer = Pipeline(steps=[
+    ('map_os', CustomMappingTransformer('OS', {'Android': 0, 'iOS': 1})),
+    ('target_isp', ce.TargetEncoder(cols=['ISP'],
+                           handle_missing='return_nan', #will use imputer later to fill in
+                           handle_unknown='return_nan'  #will use imputer later to fill in
+    )),
+    ('map_level', CustomMappingTransformer('Experience Level', {'low': 0, 'medium': 1, 'high':2})),
+    ('map_gender', CustomMappingTransformer('Gender', {'Male': 0, 'Female': 1})),
+    ('tukey_age', CustomTukeyTransformer('Age', 'inner')),
+    ('tukey_time spent', CustomTukeyTransformer('Time Spent', 'inner')),
+    ('scale_age', CustomRobustTransformer('Age')),
+    ('scale_time spent', CustomRobustTransformer('Time Spent')),
+    ('impute', KNNImputer(n_neighbors=5, weights="uniform", add_indicator=False)),
+    ], verbose=True)
+
