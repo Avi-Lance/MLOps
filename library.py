@@ -14,6 +14,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 
 
+titanic_variance_based_split = 107
+customer_variance_based_split = 113
+
 class CustomMappingTransformer(BaseEstimator, TransformerMixin):
   def __init__(self, mapping_column, mapping_dict:dict):
     assert isinstance(mapping_dict, dict), f'{self.__class__.__name__} constructor expected dictionary but got {type(mapping_dict)} instead.'
