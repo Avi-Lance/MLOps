@@ -223,9 +223,11 @@ def find_random_state(features_df, labels, n=200):
     test_pred = model.predict(test_X)             #predict against test set
     train_f1 = f1_score(train_y, train_pred)   #F1 on training predictions
     test_f1 = f1_score(test_y, test_pred)      #F1 on test predictions
+    if test_f1 * train_f1 == 0: #skip this case
+      continue
     f1_ratio = test_f1/train_f1          #take the ratio
     var.append(f1_ratio)
-  rs_value = sum(var)/len(var)  #get average ratio value    
+  rs_value = sum(var)/len(var)  #get average ratio value
   idx = np.array(abs(var - rs_value)).argmin()  #find the index of the smallest value
   return idx
 
