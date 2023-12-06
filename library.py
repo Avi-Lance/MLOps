@@ -17,7 +17,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_sc
 
 titanic_variance_based_split = 107
 customer_variance_based_split = 113
-stroke_variance_based_split = 141
+stroke_variance_based_split = 98
 
 class CustomMappingTransformer(BaseEstimator, TransformerMixin):
   def __init__(self, mapping_column, mapping_dict:dict):
